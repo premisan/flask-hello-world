@@ -46,6 +46,21 @@ curl http://localhost:5000/
 # 출력: <p>Hello, World!</p>
 ```
 
+### 3. 분산 추적(Trace) 테스트 엔드포인트 호출
+
+여러 외부 퍼블릭 API를 순차적으로 호출하며, 어느 구간에서 지연/병목이 발생하는지 Trace(OpenTelemetry, Jaeger, Datadog 등)로 확인할 수 있는 경로입니다.
+
+```bash
+# 기본 호출 (Cloudflare, GitHub, JSONPlaceholder, Open-Meteo + 1초 의도적 지연 시뮬레이션 포함)
+curl http://localhost:5000/trace-test
+
+# 지연 시뮬레이션 시간 조절 (예: 2.5초 지연)
+curl "http://localhost:5000/trace-test?delay=2.5"
+
+# 순수 외부 API 레이턴시만 측정 (지연 시뮬레이션 제외)
+curl "http://localhost:5000/trace-test?include_delay=false"
+```
+
 ---
 
 ## 🐳 Docker 환경에서 실행
@@ -107,12 +122,12 @@ kubectl apply -f k8s/service.yaml
 ### 배포 상태 확인 및 테스트
 
 ```bash
-# Pod 및 Service 상태 확인
-kubectl get pods -l app=flask-hello-world
-kubectl get svc flask-hello-world-service
+# Pod 및 Service 상태 확인 (sample 네임스페이스)
+kubectl get pods -n sample -l app=flask-hello-world
+kubectl get svc -n sample flask-hello-world-service
 
 # 포트 포워딩으로 로컬에서 접근
-kubectl port-forward svc/flask-hello-world-service 8080:80
+kubectl port-forward -n sample svc/flask-hello-world-service 8080:80
 ```
 
 브라우저 또는 터미널에서 확인:
